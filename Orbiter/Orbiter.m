@@ -52,7 +52,7 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
             [_sharedLocationManager startUpdatingLocation];
         }
     });
-    
+
     return _sharedLocationManager;
 }
 #endif
@@ -64,17 +64,17 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
     if (!self) {
         return nil;
     }
-    
+
     self.HTTPManager = [[AFHTTPRequestOperationManager alloc] initWithBaseURL:baseURL];
     self.HTTPManager.credential = credential;
-    
+
     AFJSONRequestSerializer *requestSerializer = [AFJSONRequestSerializer serializer];
     [requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     self.HTTPManager.requestSerializer = requestSerializer;
-    
+
     self.HTTPManager.responseSerializer = [AFHTTPResponseSerializer serializer];
     [self.HTTPManager.responseSerializer setAcceptableContentTypes:[NSSet setWithObjects:@"application/json", @"text/plain", nil]];
-    
+
     return self;
 }
 
@@ -103,7 +103,7 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
     [mutablePayload setValue:[[NSLocale currentLocale] identifier] forKey:@"locale"];
     [mutablePayload setValue:[[NSLocale preferredLanguages] objectAtIndex:0] forKey:@"language"];
     [mutablePayload setValue:[[NSTimeZone defaultTimeZone] name] forKey:@"timezone"];
-    
+
 #ifdef __CORELOCATION__
     CLLocation *location = [[[self class] sharedLocationManager] location];
     if (location) {
@@ -111,17 +111,17 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
         [mutablePayload setValue:[[NSNumber numberWithDouble:location.coordinate.longitude] stringValue] forKey:@"lng"];
     }
 #endif
-    
+
     NSMutableSet *mutableTags = [NSMutableSet set];
     [mutableTags addObject:[NSString stringWithFormat:@"v%@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]]];
     [mutableTags addObject:[[UIDevice currentDevice] model]];
     [mutableTags addObject:[NSString stringWithFormat:@"%@ %@", [[UIDevice currentDevice] systemName], [[UIDevice currentDevice] systemVersion]]];
     [mutablePayload setValue:[mutableTags allObjects] forKey:@"tags"];
-    
+
     if (alias) {
         [mutablePayload setValue:alias forKey:@"alias"];
     }
-    
+
     [self registerDeviceToken:deviceToken withPayload:mutablePayload success:success failure:failure];
 }
 
@@ -131,7 +131,7 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
                     failure:(void (^)(NSError *error))failure
 {
     NSURLRequest *request = [self requestForRegistrationOfDeviceToken:deviceToken withPayload:payload];
-    
+
     AFHTTPRequestOperation *requestOperation = [self.HTTPManager HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -141,7 +141,7 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
             failure(error);
         }
     }];
-    
+
     [self.HTTPManager.operationQueue addOperation:requestOperation];
 }
 
@@ -150,7 +150,7 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
                       failure:(void (^)(NSError *error))failure
 {
     NSURLRequest *request = [self requestForUnregistrationOfDeviceToken:deviceToken];
-    
+
     AFHTTPRequestOperation *requestOperation = [self.HTTPManager HTTPRequestOperationWithRequest:request success:^(__unused AFHTTPRequestOperation *operation, id responseObject) {
         if (success) {
             success(responseObject);
@@ -160,7 +160,7 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
             failure(error);
         }
     }];
-    
+
     [self.HTTPManager.operationQueue addOperation:requestOperation];
 }
 
@@ -187,9 +187,9 @@ static NSString * const kUrbanAirshipAPIBaseURLString = @"https://go.urbanairshi
     if (!self) {
         return nil;
     }
-    
+
     [self.HTTPManager.requestSerializer setValue:@"*/*" forHTTPHeaderField:@"Accept"];
-    
+
     return self;
 }
 
@@ -230,27 +230,27 @@ static NSString * const kUrbanAirshipAPIBaseURLString = @"https://go.urbanairshi
     if (alias) {
         [mutablePayload setValue:alias forKey:@"alias"];
     }
-    
+
     if (badge) {
         [mutablePayload setValue:[badge stringValue] forKey:@"badge"];
     }
-    
+
     if (tags && [tags count] > 0) {
         [mutablePayload setValue:[tags allObjects] forKey:@"tags"];
     }
-    
+
     if (quietTimeStartComponents && quietTimeEndComponents) {
         NSMutableDictionary *mutableQuietTimePayload = [NSMutableDictionary dictionary];
-        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02d:%02d", [quietTimeStartComponents hour], [quietTimeStartComponents minute]] forKey:@"start"];
-        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02d:%02d", [quietTimeEndComponents hour], [quietTimeEndComponents minute]] forKey:@"end"];
-        
+        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02ld:%02ld", (long)[quietTimeStartComponents hour], (long)[quietTimeStartComponents minute]] forKey:@"start"];
+        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02ld:%02ld", (long)[quietTimeEndComponents hour], (long)[quietTimeEndComponents minute]] forKey:@"end"];
+
         [mutablePayload setValue:mutableQuietTimePayload forKey:@"quiettime"];
     }
-    
+
     if (timeZone) {
         [mutablePayload setValue:[timeZone name] forKey:@"tz"];
     }
-    
+
     [self registerDeviceToken:deviceToken withPayload:mutablePayload success:success failure:failure];
 }
 
