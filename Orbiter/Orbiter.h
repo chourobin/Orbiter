@@ -1,5 +1,5 @@
 // Orbiter.h
-// 
+//
 // Copyright (c) 2012 Mattt Thompson (http://mattt.me/)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -98,7 +98,7 @@
  @param deviceToken The device token. This can be either an `NSString` or `NSData` representation.
  
  @return The constructed push notification unregistration request.
-*/
+ */
 - (NSURLRequest *)requestForUnregistrationOfDeviceToken:(id)deviceToken;
 
 @end
@@ -141,44 +141,6 @@
                    timeZone:(NSTimeZone *)timeZone
              quietTimeStart:(NSDateComponents *)quietTimeStartComponents
                quietTimeEnd:(NSDateComponents *)quietTimeEndComponents
-                    success:(void (^)(id responseObject))success
-                    failure:(void (^)(NSError *error))failure;
-
-@end
-
-#pragma mark -
-
-/**
- A subclass of Orbiter for communicating with the Parse push notification service.
-
- @see https://parse.com/docs/push_guide
- */
-@interface ParseOrbiter : Orbiter
-
-/**
- Initializes a Parse Orbiter with the specified API credentials.
-
- @param applicationID The application identifier.
- @param RESTAPIKey The REST API key.
- */
-+ (instancetype)parseManagerWithApplicationID:(NSString *)applicationID
-                                   RESTAPIKey:(NSString *)RESTAPIKey;
-
-/**
- Register a given device token to receive push notifications.
- 
- @param deviceToken The device token. This can be either an `NSString` or `NSData` representation.
- @param alias The alias to be associated with the device token, such as a username or email address.
- @param badge The badge count.
- @param channels The channels to be associated with the registration
- @param success A block to be executed after successfully registering the device token for push notifications. The block has no return value and takes a single argument: the response object returned by the web service.
- @param failure A block to be executed after failing to register the device token for push notifications. The block has no return value and takes a single argument: the error encountered.
- */
-- (void)registerDeviceToken:(id)deviceToken
-                  withAlias:(NSString *)alias
-                      badge:(NSNumber *)badge
-                   channels:(NSSet *)tags
-                   timeZone:(NSTimeZone *)timeZone
                     success:(void (^)(id responseObject))success
                     failure:(void (^)(NSError *error))failure;
 

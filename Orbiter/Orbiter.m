@@ -83,13 +83,13 @@ static NSString * AFNormalizedDeviceTokenStringWithDeviceToken(id deviceToken) {
 {
     NSString *path = [NSString stringWithFormat:@"devices/%@", AFNormalizedDeviceTokenStringWithDeviceToken(deviceToken)];
     NSString *urlString = [[self.HTTPManager.baseURL URLByAppendingPathComponent:path] absoluteString];
-    return [self.HTTPManager.requestSerializer requestWithMethod:@"PUT" URLString:urlString parameters:payload];
+    return [self.HTTPManager.requestSerializer requestWithMethod:@"PUT" URLString:urlString parameters:payload error:nil];
 }
 
 - (NSURLRequest *)requestForUnregistrationOfDeviceToken:(id)deviceToken {
     NSString *path = [NSString stringWithFormat:@"devices/%@", AFNormalizedDeviceTokenStringWithDeviceToken(deviceToken)];
     NSString *urlString = [[self.HTTPManager.baseURL URLByAppendingPathComponent:path] absoluteString];
-    return [self.HTTPManager.requestSerializer requestWithMethod:@"DELETE" URLString:urlString parameters:nil];
+    return [self.HTTPManager.requestSerializer requestWithMethod:@"DELETE" URLString:urlString parameters:nil error:nil];
 }
 
 #pragma mark -
@@ -198,13 +198,14 @@ static NSString * const kUrbanAirshipAPIBaseURLString = @"https://go.urbanairshi
 {
     NSString *path = [NSString stringWithFormat:@"device_tokens/%@", AFNormalizedDeviceTokenStringWithDeviceToken(deviceToken)];
     NSString *urlString = [[self.HTTPManager.baseURL URLByAppendingPathComponent:path] absoluteString];
-    return [self.HTTPManager.requestSerializer requestWithMethod:@"PUT" URLString:urlString parameters:payload];
+    return [self.HTTPManager.requestSerializer requestWithMethod:@"PUT" URLString:urlString parameters:payload error:nil];
 }
 
 - (NSURLRequest *)requestForUnregistrationOfDeviceToken:(id)deviceToken
 {
-    
-    return [self.HTTPManager.requestSerializer requestWithMethod:@"DELETE" URLString:[NSString stringWithFormat:@"device_tokens/%@", AFNormalizedDeviceTokenStringWithDeviceToken(deviceToken)] parameters:nil];
+    NSString *path = [NSString stringWithFormat:@"device_tokens/%@", AFNormalizedDeviceTokenStringWithDeviceToken(deviceToken)];
+    NSString *urlString = [[self.HTTPManager.baseURL URLByAppendingPathComponent:path] absoluteString];
+    return [self.HTTPManager.requestSerializer requestWithMethod:@"DELETE" URLString:urlString parameters:nil error:nil];
 }
 
 - (void)registerDeviceToken:(NSString *)deviceToken
@@ -240,8 +241,8 @@ static NSString * const kUrbanAirshipAPIBaseURLString = @"https://go.urbanairshi
     
     if (quietTimeStartComponents && quietTimeEndComponents) {
         NSMutableDictionary *mutableQuietTimePayload = [NSMutableDictionary dictionary];
-        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02ld:%02ld", (long)[quietTimeStartComponents hour], (long)[quietTimeStartComponents minute]] forKey:@"start"];
-        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02ld:%02ld", (long)[quietTimeEndComponents hour], (long)[quietTimeEndComponents minute]] forKey:@"end"];
+        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02d:%02d", [quietTimeStartComponents hour], [quietTimeStartComponents minute]] forKey:@"start"];
+        [mutableQuietTimePayload setValue:[NSString stringWithFormat:@"%02d:%02d", [quietTimeEndComponents hour], [quietTimeEndComponents minute]] forKey:@"end"];
         
         [mutablePayload setValue:mutableQuietTimePayload forKey:@"quiettime"];
     }
@@ -251,84 +252,6 @@ static NSString * const kUrbanAirshipAPIBaseURLString = @"https://go.urbanairshi
     }
     
     [self registerDeviceToken:deviceToken withPayload:mutablePayload success:success failure:failure];
-}
-
-@end
-
-#pragma mark -
-
-static NSString * const kParseAPIBaseURLString = @"https://api.parse.com/1/";
-
-@implementation ParseOrbiter
-
-+ (instancetype)parseManagerWithApplicationID:(NSString *)applicationID
-                                   RESTAPIKey:(NSString *)RESTAPIKey
-{
-    ParseOrbiter *orbiter = [[ParseOrbiter alloc] initWithBaseURL:[NSURL URLWithString:kParseAPIBaseURLString] credential:nil];
-    [orbiter.HTTPManager.requestSerializer setValue:applicationID forHTTPHeaderField:@"X-Parse-Application-Id"];
-    [orbiter.HTTPManager.requestSerializer setValue:RESTAPIKey forHTTPHeaderField:@"X-Parse-REST-API-Key"];
-    
-    return orbiter;
-}
-
-#pragma mark - Orbiter
-
-- (NSURLRequest *)requestForRegistrationOfDeviceToken:(id)deviceToken
-                                          withPayload:(NSDictionary *)payload
-{
-    NSString *path = [[self.HTTPManager.baseURL URLByAppendingPathComponent:@"installations"] absoluteString];
-    return [self.HTTPManager.requestSerializer requestWithMethod:@"POST" URLString:path parameters:payload];
-}
-
-- (NSURLRequest *)requestForUnregistrationOfDeviceToken:(id)deviceToken {
-    return nil;
-}
-
-
-- (void)registerDeviceToken:(id)deviceToken
-                  withAlias:(NSString *)alias
-                    success:(void (^)(id))success
-                    failure:(void (^)(NSError *))failure
-{
-    [self registerDeviceToken:deviceToken withAlias:alias badge:nil channels:nil timeZone:[NSTimeZone defaultTimeZone] success:success failure:failure];
-}
-
-- (void)registerDeviceToken:(id)deviceToken
-                  withAlias:(NSString *)alias
-                      badge:(NSNumber *)badge
-                   channels:(NSSet *)channels
-                   timeZone:(NSTimeZone *)timeZone
-                    success:(void (^)(id responseObject))success
-                    failure:(void (^)(NSError *error))failure
-{
-    NSMutableDictionary *mutablePayload = [NSMutableDictionary dictionary];
-    [mutablePayload setValue:@"ios" forKey:@"deviceType"];
-    [mutablePayload setValue:AFNormalizedDeviceTokenStringWithDeviceToken(deviceToken) forKey:@"deviceToken"];
-    
-    if (alias) {
-        [mutablePayload setValue:alias forKey:@"alias"];
-    }
-    
-    if (badge) {
-        [mutablePayload setValue:[badge stringValue] forKey:@"badge"];
-    }
-    
-    if (channels && [channels count] > 0) {
-        [mutablePayload setValue:[channels allObjects] forKey:@"channels"];
-    }
-    
-    if (timeZone) {
-        [mutablePayload setValue:[timeZone name] forKey:@"tz"];
-    }
-    
-    [self registerDeviceToken:deviceToken withPayload:mutablePayload success:success failure:failure];
-}
-
-- (void)unregisterDeviceToken:(id)deviceToken
-                      success:(void (^)())success
-                      failure:(void (^)(NSError *))failure
-{
-    [NSException raise:@"Unregistraion not supported by Parse API" format:nil];
 }
 
 @end
